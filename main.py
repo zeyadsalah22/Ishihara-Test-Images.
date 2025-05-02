@@ -2,19 +2,30 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-def kmeans(X, k, max_iters=1000, tolerance=1e-4):
+def kmeans(X, k, max_iters=1000, epsilon=1e-4):
     np.random.seed(42)
     centroids = X[np.random.choice(len(X), k, replace=False)]
 
     for _ in range(max_iters):
-        distances = np.linalg.norm(X[:, None] - centroids, axis=2)
+        # Compute distances from each point to each centroid
+        distances = np.linalg.norm(X[:, None] - centroids[None, :], axis=2)
         labels = np.argmin(distances, axis=1)
-        new_centroids = np.array([X[labels == i].mean(axis=0) for i in range(k)])
-        if np.all(np.abs(new_centroids - centroids) < tolerance):
+
+        # Update centroids
+        new_centroids = np.array([
+            X[labels == i].mean(axis=0) if np.any(labels == i) else centroids[i]
+            for i in range(k)
+        ])
+
+        # Compute total centroid shift
+        shift = np.linalg.norm(new_centroids - centroids)
+        if shift < epsilon:
             break
+
         centroids = new_centroids
 
     return labels, centroids
+
 
 def segment_image_with_kmeans(image_path, k):
     image = cv2.imread(image_path)
@@ -37,7 +48,7 @@ def refine_mask(mask):
 if __name__ == "__main__":
     input_number = "12"
     image_path = f"Input/{input_number}.jpg"  # Change this to your input image
-    k = 7
+    k = 12
 
     original, segmented, label_map = segment_image_with_kmeans(image_path, k)
 
