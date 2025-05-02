@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-def kmeans(X, k, max_iters=100, tolerance=1e-4):
+def kmeans(X, k, max_iters=1000, tolerance=1e-4):
     np.random.seed(42)
     centroids = X[np.random.choice(len(X), k, replace=False)]
 
@@ -33,8 +33,9 @@ def refine_mask(mask):
     closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel, iterations=2)
     return closed
 
+
 if __name__ == "__main__":
-    image_path = "Input/74.jpg"  # Change this to your input image
+    image_path = "Input/42.jpg"  # Change this to your input image
     k = 7
 
     original, segmented, label_map = segment_image_with_kmeans(image_path, k)
@@ -53,8 +54,14 @@ if __name__ == "__main__":
         plt.show()
 
     # Pick the best cluster by manually checking above
-    TARGET_CLUSTER_INDEX = int(input("Enter the cluster index that contains the number: "))
-    number_mask = cluster_masks[TARGET_CLUSTER_INDEX]
+    TARGET_CLUSTERS = input("Enter the cluster indices (comma-separated) that contain the number: ")
+    target_indices = [int(i.strip()) for i in TARGET_CLUSTERS.split(",")]
+
+    # Combine selected cluster masks
+    combined_mask = np.zeros_like(cluster_masks[0])
+    for idx in target_indices:
+        combined_mask = cv2.bitwise_or(combined_mask, cluster_masks[idx])
+    number_mask = combined_mask
 
     # Show final result
     plt.figure(figsize=(12, 5))
