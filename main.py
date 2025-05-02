@@ -35,7 +35,8 @@ def refine_mask(mask):
 
 
 if __name__ == "__main__":
-    image_path = "Input/42.jpg"  # Change this to your input image
+    input_number = "12"
+    image_path = f"Input/{input_number}.jpg"  # Change this to your input image
     k = 7
 
     original, segmented, label_map = segment_image_with_kmeans(image_path, k)
@@ -62,6 +63,9 @@ if __name__ == "__main__":
     for idx in target_indices:
         combined_mask = cv2.bitwise_or(combined_mask, cluster_masks[idx])
     number_mask = combined_mask
+
+    # Save the number mask
+    cv2.imwrite(f"Output/{input_number}_number_mask.png", number_mask)
 
     # Show final result
     plt.figure(figsize=(12, 5))
